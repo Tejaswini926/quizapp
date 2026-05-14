@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Quiz App</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #3498db;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .quiz-container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 400px;
+  }
+
+  h2 {
+    margin-bottom: 15px;
+  }
+
+  .option {
+    margin: 8px 0;
+  }
+
+  button {
+    margin-top: 15px;
+    padding: 10px;
+    border: none;
+    background: #2ecc71;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    opacity: 0.8;
+  }
+
+  #result {
+    font-weight: bold;
+    margin-top: 10px;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="quiz-container">
+  <h2 id="question">Question</h2>
+  <div id="answers"></div>
+
+  <button onclick="nextQuestion()">Next</button>
+  <div id="result"></div>
+</div>
+
+<script>
+const quiz = [
+  {
+    type: "single",
+    question: "Which language is used for web apps?",
+    options: ["Python", "JavaScript", "C++", "Java"],
+    answer: "JavaScript"
+  },
+  {
+    type: "multi",
+    question: "Select frontend technologies:",
+    options: ["HTML", "CSS", "Python", "JavaScript"],
+    answer: ["HTML", "CSS", "JavaScript"]
+  },
+  {
+    type: "fill",
+    question: "Fill in the blank: HTML stands for ____",
+    answer: "HyperText Markup Language"
+  }
+];
+
+let current = 0;
+let score = 0;
+
+function loadQuestion() {
+  const q = quiz[current];
+  document.getElementById("question").innerText = q.question;
+  const answersDiv = document.getElementById("answers");
+  answersDiv.innerHTML = "";
+
+  if (q.type === "single") {
+    q.options.forEach(opt => {
+      answersDiv.innerHTML += `
+        <div class="option">
+          <input type="radio" name="answer" value="${opt}"> ${opt}
+        </div>`;
+    });
+  }
+
+  else if (q.type === "multi") {
+    q.options.forEach(opt => {
+      answersDiv.innerHTML += `
+        <div class="option">
+          <input type="checkbox" value="${opt}"> ${opt}
+        </div>`;
+    });
+  }
+
+  else if (q.type === "fill") {
+    answersDiv.innerHTML = `
+      <input type="text" id="fillInput" placeholder="Type your answer">`;
+  }
+}
+
+function getAnswer() {
+  const q = quiz[current];
+
+  if (q.type === "single") {
+    const selected = document.querySelector('input[name="answer"]:checked');
+    return selected ? selected.value : null;
+  }
+
+  if (q.type === "multi") {
+    const selected = [...document.querySelectorAll('input[type="checkbox"]:checked')]
+      .map(el => el.value);
+    return selected;
+  }
+
+  if (q.type === "fill") {
+    return document.getElementById("fillInput").value.trim();
+  }
+}
+
+function checkAnswer(userAnswer) {
+  const correct = quiz[current].answer;
+
+  if (Array.isArray(correct)) {
+    return JSON.stringify(userAnswer.sort()) === JSON.stringify(correct.sort());
+  } else {
+    return userAnswer && userAnswer.toString().toLowerCase() === correct.toLowerCase();
+  }
+}
+
+function nextQuestion() {
+  const userAnswer = getAnswer();
+
+  if (userAnswer === null || userAnswer.length === 0) {
+    alert("Please answer before continuing!");
+    return;
+  }
+
+  if (checkAnswer(userAnswer)) {
+    score++;
+  }
+
+  current++;
+
+  if (current < quiz.length) {
+    loadQuestion();
+  } else {
+    document.querySelector(".quiz-container").innerHTML = `
+      <h2>Quiz Completed 🎉</h2>
+      <p>Your Score: ${score} / ${quiz.length}</p>
+      <button onclick="location.reload()">Restart</button>
+    `;
+  }
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
